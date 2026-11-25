@@ -1,6 +1,8 @@
 package com.example.purchase_order_api;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,5 +21,10 @@ public class PurchaseOrderController {
     @GetMapping
     public List<PurchaseOrder> getAll() {
         return repository.findAll();
+    }
+
+    @PostMapping
+    public PurchaseOrder create(@RequestBody PurchaseOrder purchaseOrder) {
+        return repository.save(purchaseOrder);
     }
 }
