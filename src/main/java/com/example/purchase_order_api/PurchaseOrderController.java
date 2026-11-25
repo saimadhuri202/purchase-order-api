@@ -1,6 +1,8 @@
 package com.example.purchase_order_api;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +23,12 @@ public class PurchaseOrderController {
     @GetMapping
     public List<PurchaseOrder> getAll() {
         return repository.findAll();
+    }
+
+    @GetMapping ("/{id}")
+    public ResponseEntity<PurchaseOrder> getById(@PathVariable  Long id) {
+        return repository.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+
     }
 
     @PostMapping
