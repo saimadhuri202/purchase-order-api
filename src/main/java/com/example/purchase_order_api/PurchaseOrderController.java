@@ -1,5 +1,6 @@
 package com.example.purchase_order_api;
 
+import com.example.purchase_order_api.dto.PurchaseOrderRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,7 +10,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 
 import java.util.List;
 
@@ -28,15 +28,33 @@ public class PurchaseOrderController {
         return repository.findAll();
     }
 
-    @GetMapping ("/{id}")
-    public ResponseEntity<PurchaseOrder> getById(@PathVariable  Long id) {
-        return repository.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
-
+    @GetMapping("/{id}")
+    public ResponseEntity<PurchaseOrder> getById(@PathVariable Long id) {
+        return repository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public PurchaseOrder create(@RequestBody PurchaseOrder purchaseOrder) {
-        return repository.save(purchaseOrder);
+    public PurchaseOrder create(@RequestBody PurchaseOrderRequest request) {
+        PurchaseOrder order = new PurchaseOrder();
+        order.setPoNumber(request.poNumber());
+        order.setVendorName(request.vendorName());
+        order.setOrderDate(request.orderDate());
+        order.setStatus(request.status());
+        order.setTotalAmount(request.totalAmount());
+
+        if (request.lines() != null) {
+            for (PurchaseOrderRequest.LineRequest lr : request.lines()) {
+                PurchaseOrderLine line = new PurchaseOrderLine();
+                line.setItem(lr.item());
+                line.setQuantity(lr.quantity());
+                line.setUnitPrice(lr.unitPrice());
+                line.setPurchaseOrder(order);
+                order.getLines().add(line);
+            }
+        }
+        return repository.save(order);
     }
 
     @PutMapping("/{id}")
