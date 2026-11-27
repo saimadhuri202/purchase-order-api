@@ -1,6 +1,7 @@
 package com.example.purchase_order_api;
 
 import com.example.purchase_order_api.dto.PurchaseOrderRequest;
+import com.example.purchase_order_api.dto.PurchaseOrderResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,19 +25,22 @@ public class PurchaseOrderController {
     }
 
     @GetMapping
-    public List<PurchaseOrder> getAll() {
-        return repository.findAll();
+    public List<PurchaseOrderResponse> getAll() {
+        return repository.findAll().stream()
+                .map(PurchaseOrderResponse::from)
+                .toList();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PurchaseOrder> getById(@PathVariable Long id) {
+    public ResponseEntity<PurchaseOrderResponse> getById(@PathVariable Long id) {
         return repository.findById(id)
+                .map(PurchaseOrderResponse::from)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public PurchaseOrder create(@RequestBody PurchaseOrderRequest request) {
+    public PurchaseOrderResponse create(@RequestBody PurchaseOrderRequest request) {
         PurchaseOrder order = new PurchaseOrder();
         order.setPoNumber(request.poNumber());
         order.setVendorName(request.vendorName());
@@ -54,11 +58,11 @@ public class PurchaseOrderController {
                 order.getLines().add(line);
             }
         }
-        return repository.save(order);
+        return PurchaseOrderResponse.from(repository.save(order));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PurchaseOrder> update(@PathVariable Long id, @RequestBody PurchaseOrder updated) {
+    public ResponseEntity<PurchaseOrderResponse> update(@PathVariable Long id, @RequestBody PurchaseOrder updated) {
         return repository.findById(id)
                 .map(existing -> {
                     existing.setPoNumber(updated.getPoNumber());
@@ -66,7 +70,7 @@ public class PurchaseOrderController {
                     existing.setOrderDate(updated.getOrderDate());
                     existing.setStatus(updated.getStatus());
                     existing.setTotalAmount(updated.getTotalAmount());
-                    return ResponseEntity.ok(repository.save(existing));
+                    return ResponseEntity.ok(PurchaseOrderResponse.from(repository.save(existing)));
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
